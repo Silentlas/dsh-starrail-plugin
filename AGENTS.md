@@ -152,7 +152,13 @@ Gitee API 的两个坑（真机撞过）：
 - **更新类接口只认 `application/x-www-form-urlencoded`**，发 JSON 一律 400。改仓库属性必须用表单编码。
 - **创建接口会忽略 `private=false`**，账号默认建私有仓；可见性只能在创建后用 PATCH 表单改成公开。
 
-## 六、开发与红线
+## 六、多人协作
+
+分工任务书在 `docs/tasks/`，接手前先读 `docs/tasks/00-总览与协作约定.md`。
+要点：命令统一用 `core/registry.py` 注册（不改路由骨架）；每个模块目录只由对应负责人修改；
+命令注册表里的 handler 签名统一 `func(req: Request) -> Result`，出图返回 `Result(media=Media(png=...))`。
+
+## 七、开发与红线
 
 开发顺序：数据结构 → 数据层 → 业务层 → 接入路由。每个功能必须验证：
 正常返回 / Cookie 失效 / 网络失败 / 未绑定 / 群聊私聊区分 / 频率限制。
@@ -165,7 +171,7 @@ Gitee API 的两个坑（真机撞过）：
 - 禁止凭记忆写米游社字段，一律查 UIGF 文档
 - 禁止改 `roost_sdk.py`（官方文件，升级会被覆盖）
 
-## 七、进度
+## 八、进度
 
 - **阶段0 环境搭建** ✅ roost 插件骨架、DS 签名（真实接口已验证）、路由、SQLite、日志、频率限制、协议冒烟测试
 - **阶段1 账号绑定** ✅ Cookie 手动绑定（自动拉 UID/区服/昵称）、校验、解绑、群聊拦截
@@ -182,7 +188,7 @@ Gitee API 的两个坑（真机撞过）：
 图片用 Pillow 绘制 + `/api/qq/call` base64 直传；体力因 10041 排最后。
 实施顺序：图片通道 → 练度 → 遗器评分 → 抽卡 → AI 点评 → 体力。
 
-## 八、部署到 roost
+## 九、部署到 roost
 
 插件目录名与 `plugin.json` 的 `id` 必须一致，roost 才会识别。
 把整个项目目录（含 `core/`、`main.py`、`plugin.json`、`requirements.txt`）拷到
