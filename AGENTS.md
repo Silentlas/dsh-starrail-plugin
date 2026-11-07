@@ -102,6 +102,18 @@ Set-Location -LiteralPath "D:\Personal data\星铁机器人"
 15. **record 接口的 10041 不能当签名错误处理**：签名错会返回 `-10001 invalid request`；
     10041 是账号/数据层面的拒绝（战绩未公开、只读权限、设备不匹配等），
     message 常为空，所以错误提示必须兜底带上 retcode。
+16. **外部插件其实能发本地图片**（此前判断是错的，2026-11-07 实测推翻）：
+    面板接口 `POST /api/qq/call` 支持 `method=uploadMedia`，`args` 里给 `fileData`（base64）
+    即可上传本地 PNG（官方 `file_data` 上限 5MB，超出走分片），返回 `file_uuid` + `file_info`；
+    再用 `method=sendC2C/sendGroup`、`msgType:7`、`content:' '`、`media:{file_info}` 发出富媒体。
+    `args` 的位置参数约定是 `__target`（第一个）+ `__rest`（数组）+ 其余合成对象。
+    所以图片不需要图床、不需要公网 URL。图床只作兜底（`h.uguu.se` 实测可用；
+    catbox/litterbox/tmpfiles/0x0.st 在本网络不可用）。
+17. **面板类数据可以完全不要 Cookie**：`api.mihomo.me/sr_info_parsed/{uid}?lang=chs`
+    只要 UID 就能拿到角色/光锥/遗器（含主副词条）全量。代价是**只能拿到用户在
+    米游社「角色展示」里放出来的角色**（实测 129 角色只解析到 8 个），帮助文案必须写明。
+18. **群聊被动回复有硬额度**：5 分钟 / 5 次（错误码 40034128），单聊 60 分钟 / 4 次。
+    一条命令只能回一次，图文必须合成一条富媒体，不要拆成多条。
 
 ## 四、目录
 
@@ -163,6 +175,12 @@ Gitee API 的两个坑（真机撞过）：
 - **阶段3 抽卡分析** ⬜ authkey 解析、全量拉取、统计保底、UIGF 导出
 - **阶段4 图片渲染** ⬜ Playwright 引擎与三类卡片
 - **阶段5 AI 能力** ⬜ 自然语言解析、练度点评、账号诊断
+
+**方案定稿（2026-11-07）**：详见 `docs/功能可行性与方案评估.md`。
+要点：绑定以「只绑 UID」为默认、Cookie 为进阶；练度走 mihomo.me 免凭证；
+遗器只做词条量化与面板总评（伤害引擎延后）；抽卡用用户 authkey；
+图片用 Pillow 绘制 + `/api/qq/call` base64 直传；体力因 10041 排最后。
+实施顺序：图片通道 → 练度 → 遗器评分 → 抽卡 → AI 点评 → 体力。
 
 ## 八、部署到 roost
 
