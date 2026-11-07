@@ -95,6 +95,13 @@ Set-Location -LiteralPath "D:\Personal data\星铁机器人"
     「机器人不认识这个命令」这种误导性回复，真实原因只在插件日志里。
     所以 `on_any_message` 里已加异常兜底：出错必回一句「命令处理出错了」并返回 True 认领消息。
     新增任何被动命令都要保持这个兜底。
+14. **扫码拿到的凭证与 device_id 绑定**。`x-rpc-device-id` 每次随机生成的话，
+    record 系列接口（`/game_record/app/hkrpg/api/note|index`）会被判定非本人设备。
+    现在 device_id 随绑定一起落库（`user_bind.device_id`），后续请求沿用同一个。
+    另外 `bind_service` 不能在 `__init__` 里缓存 `get_store()`，否则 init 切换 dataDir 后仍写旧库。
+15. **record 接口的 10041 不能当签名错误处理**：签名错会返回 `-10001 invalid request`；
+    10041 是账号/数据层面的拒绝（战绩未公开、只读权限、设备不匹配等），
+    message 常为空，所以错误提示必须兜底带上 retcode。
 
 ## 四、目录
 

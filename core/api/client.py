@@ -28,11 +28,13 @@ class MhyApiError(Exception):
 class MhyClient:
     """一个 Cookie 对应一个客户端实例"""
 
-    def __init__(self, cookie: str):
+    def __init__(self, cookie: str, device_id: Optional[str] = None):
         self.cookie = cookie
         self.session = requests.Session()
         self.last_request_time = 0.0
-        self.device_id = generate_device_id()
+        # 扫码登录时用的是某个 device_id，凭证与该设备绑定；
+        # 每次请求都换新 device_id 会被判成「非本人设备」，record 接口直接返回 10041
+        self.device_id = device_id or generate_device_id()
 
     def _build_headers(self, url: str, params: Optional[dict], body: Optional[dict]) -> dict:
         host = urlparse(url).netloc
@@ -96,8 +98,9 @@ class MhyClient:
             10103: "该游戏账号未绑定此米游社账号",
             1034: "触发米游社风控验证，请稍后重试",
             -110: "请求过于频繁，请稍后再试",
+            10041: "米游社拒绝了这次查询（多为账号战绩未公开，或凭证与设备不匹配）",
         }
-        return mapping.get(retcode, message)
+        return mapping.get(retcode, message or f"米游社返回错误码 {retcode}")
 
     def get(self, url: str, params: Optional[dict] = None) -> dict:
         return self.request("GET", url, params=params)

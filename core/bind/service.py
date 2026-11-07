@@ -13,20 +13,27 @@ logger = Logger("BindService")
 
 
 class BindService:
-    def __init__(self):
-        self.store = get_store()
+    @property
+    def store(self):
+        """
+        每次现取：store 由插件入口在收到 init（拿到 dataDir）后才切到正确路径。
+        如果在 __init__ 里缓存 get_store()，就会一直用 import 时的兜底库，
+        表现为「绑定成功但数据写进了插件目录下的 data/，而不是 roost 下发的 dataDir」。
+        """
+        return get_store()
 
-    def bind_cookie(self, qq_id: str, cookie: str) -> tuple[bool, str]:
+    def bind_cookie(self, qq_id: str, cookie: str, device_id: Optional[str] = None) -> tuple[bool, str]:
         """
         绑定米游社 Cookie
         会先校验 Cookie 并拉取绑定的星铁角色，再落库
+        device_id：扫码登录时那次会话用的设备号，后续查询必须沿用，否则 record 接口会被拒
         """
         cookie = cookie.strip()
         if "ltoken" not in cookie and "cookie_token" not in cookie:
             return False, "Cookie 格式不正确，应包含 ltoken_v2 / ltuid_v2 等字段，请重新复制完整 Cookie"
 
         try:
-            client = MhyClient(cookie)
+            client = MhyClient(cookie, device_id=device_id)
             roles = get_game_roles(client)
         except MhyApiError as e:
             logger.warn(f"用户 {qq_id} Cookie 校验失败: {e.message}")
@@ -44,6 +51,7 @@ class BindService:
             "uid": role.game_uid,
             "region": role.region,
             "nickname": role.nickname,
+            "device_id": device_id or getattr(client, "device_id", None),
         })
         logger.info(f"用户 {qq_id} 绑定成功: uid={role.game_uid} region={role.region}")
 
@@ -74,7 +82,7 @@ class BindService:
         bind = self.get_user_bind(qq_id)
         if not bind or not bind.cookie:
             return None, None, "你还没有绑定米游社 Cookie，请私聊发送 #星铁绑定ck 进行绑定"
-        return MhyClient(bind.cookie), bind, ""
+        return MhyClient(bind.cookie, device_id=bind.device_id), bind, ""
 
 
 bind_service = BindService()

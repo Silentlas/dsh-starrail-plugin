@@ -98,6 +98,7 @@ class QrService:
             return True, "还没有扫码，请用米游社 App 扫描二维码"
 
         # 已确认：拼 Cookie 并完成绑定
+        logger.info(f"确认返回的 Cookie 字段: {sorted(cookies.keys())}")
         try:
             cookie = build_cookie_string(cookies)
         except QrLoginError as e:
@@ -105,7 +106,7 @@ class QrService:
             return False, f"获取凭证失败：{e.message}"
 
         self._sessions.pop(user_id, None)
-        ok, msg = bind_service.bind_cookie(user_id, cookie)
+        ok, msg = bind_service.bind_cookie(user_id, cookie, device_id=session.device_id)
         if ok:
             logger.info(f"用户 {user_id} 扫码登录并绑定成功")
             return True, "扫码登录成功！\n\n" + msg

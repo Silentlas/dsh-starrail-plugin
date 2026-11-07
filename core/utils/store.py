@@ -22,7 +22,7 @@ class UserBind:
     def __init__(self, qq_id: str, cookie: Optional[str] = None, uid: Optional[str] = None,
                  region: Optional[str] = None, nickname: Optional[str] = None,
                  auth_key: Optional[str] = None, bind_time: int = 0,
-                 last_query_time: Optional[int] = None):
+                 last_query_time: Optional[int] = None, device_id: Optional[str] = None):
         self.qq_id = qq_id
         self.cookie = cookie
         self.uid = uid
@@ -31,6 +31,7 @@ class UserBind:
         self.auth_key = auth_key
         self.bind_time = bind_time
         self.last_query_time = last_query_time
+        self.device_id = device_id
 
 
 class Store:
@@ -63,7 +64,8 @@ class Store:
                     nickname TEXT,
                     auth_key TEXT,
                     bind_time INTEGER NOT NULL,
-                    last_query_time INTEGER
+                    last_query_time INTEGER,
+                    device_id TEXT
                 )
             """)
             conn.execute("""
@@ -78,6 +80,10 @@ class Store:
                     pulled_at INTEGER
                 )
             """)
+            # 老库补列：早期版本没有 device_id
+            cols = {r["name"] for r in conn.execute("PRAGMA table_info(user_bind)")}
+            if "device_id" not in cols:
+                conn.execute("ALTER TABLE user_bind ADD COLUMN device_id TEXT")
         logger.debug(f"数据库就绪: {self.db_path}")
 
     def get_user_bind(self, qq_id: str) -> Optional[UserBind]:
@@ -89,10 +95,11 @@ class Store:
             qq_id=row["qq_id"], cookie=row["cookie"], uid=row["uid"],
             region=row["region"], nickname=row["nickname"], auth_key=row["auth_key"],
             bind_time=row["bind_time"], last_query_time=row["last_query_time"],
+            device_id=row["device_id"],
         )
 
     def set_user_bind(self, qq_id: str, data: dict):
-        allowed = {"cookie", "uid", "region", "nickname", "auth_key", "last_query_time"}
+        allowed = {"cookie", "uid", "region", "nickname", "auth_key", "last_query_time", "device_id"}
         fields = [(k, v) for k, v in data.items() if k in allowed]
         with self._conn() as conn:
             if self.get_user_bind(qq_id):
@@ -105,10 +112,11 @@ class Store:
                 )
             else:
                 conn.execute("""
-                    INSERT INTO user_bind (qq_id, cookie, uid, region, nickname, auth_key, bind_time)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO user_bind (qq_id, cookie, uid, region, nickname, auth_key, bind_time, device_id)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """, (qq_id, data.get("cookie"), data.get("uid"), data.get("region"),
-                      data.get("nickname"), data.get("auth_key"), int(time.time())))
+                      data.get("nickname"), data.get("auth_key"), int(time.time()),
+                      data.get("device_id")))
         logger.debug(f"更新用户绑定: {qq_id}")
 
     def remove_user_bind(self, qq_id: str):
