@@ -7,6 +7,7 @@ import requests
 from typing import Optional
 
 from .config import DEFAULT_HEADERS, REQUEST_INTERVAL
+from .ds_sign import generate_ds, generate_device_id
 from ..utils.logger import Logger
 
 logger = Logger("MhyApi")
@@ -24,10 +25,14 @@ class MhyClient:
         self.cookie = cookie
         self.session = requests.Session()
         self.last_request_time = 0
+        self.device_id = generate_device_id()
 
-    def _get_headers(self) -> dict:
+    def _get_headers(self, params: Optional[dict] = None, body: Optional[dict] = None) -> dict:
         headers = DEFAULT_HEADERS.copy()
         headers["Cookie"] = self.cookie
+        headers["x-rpc-device_id"] = self.device_id
+        # 生成DS签名
+        headers["DS"] = generate_ds(query=params, body=body)
         return headers
 
     def _need_wait(self) -> float:
@@ -45,8 +50,7 @@ class MhyClient:
         if wait > 0:
             time.sleep(wait)
 
-        headers = self._get_headers()
-        # TODO: 后续在这里加DS签名逻辑
+        headers = self._get_headers(params=params, body=json)
 
         try:
             resp = self.session.request(
