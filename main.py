@@ -120,7 +120,15 @@ def on_any_message(m):
     if not m.content or not m.content.lstrip().startswith(("#", "！", "!")):
         return False
 
-    result = _run(m.user, m.group, "", content=m.content)
+    try:
+        result = _run(m.user, m.group, "", content=m.content)
+    except Exception:
+        # 处理出错必须给用户一句，否则这条消息会被 ai-chat 之类的插件接走，
+        # 用户看到的是「机器人不认识这个命令」，根本查不到真实原因
+        logger.error("处理被动消息异常:\n" + traceback.format_exc(limit=3))
+        m.reply("命令处理出错了，请稍后重试；若持续出现请把这条提示发给我")
+        return True
+
     if not result.text and not result.image:
         return False
     # 必须走 _reply：这里直接 m.reply(text) 会把 result.image 丢掉，

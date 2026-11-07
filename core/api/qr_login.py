@@ -85,15 +85,37 @@ def qr_image_url(login_url: str) -> Optional[str]:
     return QR_IMAGE_API.format(data=quote(login_url, safe=""))
 
 
-def _parse_set_cookie(headers) -> dict:
-    """从响应头里抽出所有 Set-Cookie 的键值"""
+def _parse_set_cookie(resp) -> dict:
+    """
+    抽出响应里的所有 Set-Cookie。
+    注意：requests 的 resp.headers 是 CaseInsensitiveDict，**没有 get_all**（那是 urllib3 的接口），
+    真正的多值 Set-Cookie 要从 resp.cookies（已解析）或 resp.raw.headers.get_all 取。
+    """
     cookies = {}
-    for raw in headers.get_all("Set-Cookie", []) or []:
-        pair = raw.split(";")[0]
-        if "=" not in pair:
-            continue
-        k, v = pair.split("=", 1)
-        cookies[k.strip()] = v.strip()
+
+    # ① requests 已经把 Set-Cookie 解析进 CookieJar 了，最可靠
+    try:
+        for k, v in resp.cookies.items():
+            cookies[k] = v
+    except Exception:
+        pass
+
+    # ② 再用原始响应头补一遍，避免同名键或分号截断导致的漏项
+    raw_headers = getattr(getattr(resp, "raw", None), "headers", None)
+    values = []
+    if raw_headers is not None and hasattr(raw_headers, "get_all"):
+        values = raw_headers.get_all("Set-Cookie") or []
+    else:
+        single = resp.headers.get("Set-Cookie")
+        if single:
+            values = [single]
+
+    for line in values:
+        pair = line.split(";")[0]
+        if "=" in pair:
+            k, v = pair.split("=", 1)
+            cookies.setdefault(k.strip(), v.strip())
+
     return cookies
 
 
@@ -125,7 +147,7 @@ def query_qr(ticket: str, device_id: str) -> tuple[str, dict]:
     if status != QR_STATUS_CONFIRMED:
         return status, {}
 
-    cookies = _parse_set_cookie(resp.headers)
+    cookies = _parse_set_cookie(resp)
     if not cookies:
         logger.warn("确认登录但响应头没有 Set-Cookie")
         raise QrLoginError(-1, "登录已确认，但没拿到账号凭证，请重试")

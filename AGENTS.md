@@ -87,6 +87,14 @@ Set-Location -LiteralPath "D:\Personal data\星铁机器人"
     `api.pwmqr.com`、`api.qrserver.com`、`quickchart.io` 三个源都返回 200 + `file_info`（ttl 86400）。
     图发不出去时先怀疑自己没把 image 字段发出去，别急着换图床。
     诊断脚本 `scripts/probe_qq_media.py`（只上传不发送，需要 `QQ_OPENID` 环境变量）。
+12. **`requests` 的 `resp.headers` 是 `CaseInsensitiveDict`，没有 `get_all`**（那是 urllib3 的接口）。
+    扫码确认后要拿多个 `Set-Cookie`，必须走 `resp.cookies`（requests 已解析好）或
+    `resp.raw.headers.get_all("Set-Cookie")`。写成 `resp.headers.get_all()` 会抛 `AttributeError`。
+    回归用例：`scripts/test_qr_cookie.py`。
+13. **插件抛异常且不回话时，消息会被 ai-chat 这类闲聊插件接走**，用户看到的是
+    「机器人不认识这个命令」这种误导性回复，真实原因只在插件日志里。
+    所以 `on_any_message` 里已加异常兜底：出错必回一句「命令处理出错了」并返回 True 认领消息。
+    新增任何被动命令都要保持这个兜底。
 
 ## 四、目录
 
