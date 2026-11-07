@@ -43,6 +43,17 @@ QR_TTL = 240
 # 轮询间隔（秒），太密集会被风控
 QR_POLL_INTERVAL = 3
 
+# ---- 游戏登录二维码（combo/panda）----
+# 扫的是「登录游戏」的码，换到的是 stoken / ltoken(v1) / cookie_token，
+# 战绩类接口（note、index、角色练度）只认这套凭证
+GAME_QR_APP_ID = 8  # 崩坏：星穹铁道
+URL_GAME_QR_FETCH = "https://api-sdk.mihoyo.com/hkrpg_cn/combo/panda/qrcode/fetch"
+URL_GAME_QR_QUERY = "https://api-sdk.mihoyo.com/hkrpg_cn/combo/panda/qrcode/query"
+URL_S_TOKEN_BY_GAME_TOKEN = "https://api-takumi.mihoyo.com/account/ma-cn-session/app/getTokenByGameToken"
+URL_LTOKEN_BY_STOKEN = "https://passport-api.miyoushe.com/account/auth/api/getLTokenBySToken"
+URL_COOKIE_BY_STOKEN = "https://passport-api.miyoushe.com/account/auth/api/getCookieAccountInfoBySToken"
+URL_STOKEN_V2_BY_V1 = "https://passport-api.miyoushe.com/account/ma-cn-session/app/getTokenBySToken"
+
 # 把登录链接渲染成二维码图片的公网服务（roost 只能发远程图片 URL，本地文件发不出去）
 # {data} 会被替换成 urlencode 后的登录链接
 QR_IMAGE_API = "https://api.pwmqr.com/qrcode/create/?url={data}"

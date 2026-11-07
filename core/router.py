@@ -21,6 +21,7 @@ HELP_TEXT = """=== 星穹铁道助手 ===
 【账号】
 #星铁扫码登录 - 米游社扫码绑定（推荐，私聊）
 #星铁扫码状态 - 查看扫码结果并完成绑定
+#星铁网页扫码 - 备用：扫米游社网页登录码
 #星铁绑定ck <Cookie> - 手动粘贴 Cookie 绑定
 #星铁解绑 - 删除绑定信息
 【查询】
@@ -117,10 +118,17 @@ def handle(req: Request) -> Result:
     if command in ("星铁帮助", "星铁help", "星铁"):
         return Result(True, HELP_TEXT)
 
-    if command in ("星铁扫码登录", "星铁扫码"):
+    if command in ("星铁扫码登录", "星铁扫码", "星铁游戏扫码登录"):
         if req.is_group:
             return Result(False, "扫码会暴露你的登录二维码，请在私聊中进行")
-        ok, text, session = qr_service.start(req.user_id)
+        ok, text, session = qr_service.start(req.user_id, mode="game")
+        image = session.image_url if session else None
+        return Result(ok, text, image=image)
+
+    if command in ("星铁网页扫码", "星铁网页扫码登录"):
+        if req.is_group:
+            return Result(False, "扫码会暴露你的登录二维码，请在私聊中进行")
+        ok, text, session = qr_service.start(req.user_id, mode="web")
         image = session.image_url if session else None
         return Result(ok, text, image=image)
 

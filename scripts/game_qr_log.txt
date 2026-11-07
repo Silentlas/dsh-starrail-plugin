@@ -1,0 +1,131 @@
+12:15:06 fetch https://hkrpg-sdk.mihoyo.com/hkrpg_cn/combo/panda/qrcode -> http=200 retcode=0 message=OK
+12:15:06 fetch data={"url": "https://user.mihoyo.com/qr_code_in_game.html?app_id=5&app_name=%E5%B9%B3%E5%8F%B0%E5%BA%94%E7%94%A8&bbs=false&biz_key=plat_cn&expire=1794456906&ticket=6aeea5cabcaaf20645f088de"}
+12:15:06 ticket=6aeea5cabcaaf20645f088de
+12:15:06 qr_url=https://user.mihoyo.com/qr_code_in_game.html?app_id=5&app_name=%E5%B9%B3%E5%8F%B0%E5%BA%94%E7%94%A8&bbs=false&biz_key=plat_cn&expire=1794456906&ticket=6aeea5cabcaaf20645f088de
+12:15:06 qr_image=https://api.pwmqr.com/qrcode/create/?url=https%3A%2F%2Fuser.mihoyo.com%2Fqr_code_in_game.html%3Fapp_id%3D5%26app_name%3D%25E5%25B9%25B3%25E5%258F%25B0%25E5%25BA%2594%25E7%2594%25A8%26bbs%3Dfalse%26biz_key%3Dplat_cn%26expire%3D1794456906%26ticket%3D6aeea5cabcaaf20645f088de
+12:15:06 payload keys=['proto', 'raw', 'ext']
+12:15:06   payload[proto]=Raw
+12:15:10 payload keys=['proto', 'raw', 'ext']
+12:15:10   payload[proto]=Raw
+12:15:13 payload keys=['proto', 'raw', 'ext']
+12:15:13   payload[proto]=Raw
+12:15:16 payload keys=['proto', 'raw', 'ext']
+12:15:16   payload[proto]=Raw
+12:15:20 payload keys=['proto', 'raw', 'ext']
+12:15:20   payload[proto]=Raw
+12:15:23 payload keys=['proto', 'raw', 'ext']
+12:15:23   payload[proto]=Raw
+12:15:27 payload keys=['proto', 'raw', 'ext']
+12:15:27   payload[proto]=Raw
+12:15:30 payload keys=['proto', 'raw', 'ext']
+12:15:30   payload[proto]=Raw
+12:15:33 payload keys=['proto', 'raw', 'ext']
+12:15:33   payload[proto]=Raw
+12:15:37 payload keys=['proto', 'raw', 'ext']
+12:15:37   payload[proto]=Raw
+12:15:40 payload keys=['proto', 'raw', 'ext']
+12:15:40   payload[proto]=Raw
+12:15:43 payload keys=['proto', 'raw', 'ext']
+12:15:43   payload[proto]=Raw
+12:15:47 payload keys=['proto', 'raw', 'ext']
+12:15:47   payload[proto]=Raw
+12:15:50 payload keys=['proto', 'raw', 'ext']
+12:15:50   payload[proto]=Raw
+12:15:53 payload keys=['proto', 'raw', 'ext']
+12:15:53   payload[proto]=Raw
+12:15:57 payload keys=['proto', 'raw', 'ext']
+12:15:57   payload[proto]=Raw
+12:16:00 payload keys=['proto', 'raw', 'ext']
+12:16:00   payload[proto]=Raw
+12:16:03 payload keys=['proto', 'raw', 'ext']
+12:16:03   payload[proto]=Raw
+12:16:07 payload keys=['proto', 'raw', 'ext']
+12:16:07   payload[proto]=Raw
+12:16:10 payload keys=['proto', 'raw', 'ext']
+12:16:10   payload[proto]=Raw
+12:16:13 payload keys=['proto', 'raw', 'ext']
+12:16:13   payload[proto]=Raw
+12:16:17 payload keys=['proto', 'raw', 'ext']
+12:16:17   payload[proto]=Raw
+12:16:20 payload keys=['proto', 'raw', 'ext']
+12:16:20   payload[proto]=Raw
+12:16:23 payload keys=['proto', 'raw', 'ext']
+12:16:23   payload[proto]=Raw
+12:16:27 payload keys=['proto', 'raw', 'ext']
+12:16:27   payload[proto]=Raw
+12:16:30 payload keys=['proto', 'raw', 'ext']
+12:16:30   payload[proto]=Raw
+12:16:33 payload keys=['proto', 'raw', 'ext']
+12:16:33   payload[proto]=Raw
+12:16:37 payload keys=['proto', 'raw', 'ext']
+12:16:37   payload[proto]=Raw
+12:16:40 payload keys=['proto', 'raw', 'ext']
+12:16:40   payload[proto]=Raw
+12:16:43 payload keys=['proto', 'raw', 'ext']
+12:16:43   payload[proto]=Raw
+12:16:47 payload keys=['proto', 'raw', 'ext']
+12:16:47   payload[proto]=Raw
+12:16:50 payload keys=['proto', 'raw', 'ext']
+12:16:50   payload[proto]=Raw
+12:16:53 payload keys=['proto', 'raw', 'ext']
+12:16:53   payload[proto]=Raw
+12:16:57 payload keys=['proto', 'raw', 'ext']
+12:16:57   payload[proto]=Raw
+12:17:00 payload keys=['proto', 'raw', 'ext']
+12:17:00   payload[proto]=Raw
+12:17:03 payload keys=['proto', 'raw', 'ext']
+12:17:03   payload[proto]=Raw
+12:17:07 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:17:10 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:17:13 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:17:17 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:17:20 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:17:23 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:17:27 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:17:30 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:17:33 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:17:37 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:17:40 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:17:43 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:17:47 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:17:50 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:17:54 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:17:57 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:18:01 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:18:04 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:18:07 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:18:11 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:18:14 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:18:17 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:18:21 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:18:24 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:18:27 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:18:31 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:18:34 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:18:37 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:18:41 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:18:44 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:18:47 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:18:51 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:18:54 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:18:57 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:19:01 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:19:04 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:19:07 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:19:11 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:19:14 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:19:17 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:19:21 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:19:24 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:19:27 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:19:31 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:19:34 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:19:37 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:19:41 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:19:44 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:19:47 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:19:51 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:19:54 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:19:57 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:20:01 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
+12:20:04 query 失败 retcode=-106 message=二维码已过期，请重新生成二维码
