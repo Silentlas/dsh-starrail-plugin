@@ -66,6 +66,16 @@ Set-Location -LiteralPath "D:\Personal data\星铁机器人"
    所以对接 DeepSeek 不能走 tools，得另想办法（见阶段5）。
 5. **插件放进 plugins 目录后不会自动出现**，要调 `POST /api/plugins/rescan`（需 `Content-Type: application/json`），
    或重启 roost。面板 `http://127.0.0.1:8080/api/status` 的 `plugins[].loaded/error` 是判断依据。
+6. **改了插件代码，光 rescan 不会重载**。`loader.js:182` 明确 `if (this.loaded.has(id)) continue`——
+   已加载的插件会被跳过；而插件目录被运行中的 `.venv` 进程占着，`Move-Item` 也移不动。
+   可靠的更新方式是：拷完文件后 `Stop-Process` 掉插件子进程（`/api/status` 的 `pid`），
+   它会 autoRestart（`subprocess.js:344`），重启即加载新代码。判断依据：日志里
+   `外部插件就绪，注册 N 条命令` 的 N 变了。
+7. **扫码接口 createQRLogin 与 queryQRLoginStatus 必须用同一个 `x-rpc-device_id`**。
+   各生成一个不同的 UUID 会返回「请求失败，当前设备或网络环境存在风险」，看起来像风控，其实是设备不一致。
+8. **插件不能事后主动推送**。`subprocess.js` 收到 `handled` 就 `#finish` 释放 `pending`，
+   之后再发 `reply`/`push` 都因 seq 失效被静默丢弃。所以扫码这类异步流程只能做成「拉取式」：
+   用户发命令查状态，而不是后台线程回调通知。
 
 ## 四、目录
 
@@ -120,7 +130,9 @@ Gitee API 的两个坑（真机撞过）：
 ## 七、进度
 
 - **阶段0 环境搭建** ✅ roost 插件骨架、DS 签名（真实接口已验证）、路由、SQLite、日志、频率限制、协议冒烟测试
-- **阶段1 账号绑定** ✅ Cookie 手动绑定（自动拉 UID/区服/昵称）、校验、解绑、群聊拦截 ｜ ⬜ 扫码登录、Cookie 巡检
+- **阶段1 账号绑定** ✅ Cookie 手动绑定（自动拉 UID/区服/昵称）、校验、解绑、群聊拦截
+  ｜ ✅ 米游社扫码登录（`#星铁扫码登录` → 二维码 → `#星铁扫码状态` 完成绑定）
+  ｜ ⬜ Cookie 巡检
 - **阶段2 练度查询** ⬜ 首页信息、角色详情、伤害预期
 - **阶段3 抽卡分析** ⬜ authkey 解析、全量拉取、统计保底、UIGF 导出
 - **阶段4 图片渲染** ⬜ Playwright 引擎与三类卡片

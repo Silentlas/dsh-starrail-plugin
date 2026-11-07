@@ -8,6 +8,7 @@ from typing import Optional
 
 from .api.client import MhyApiError
 from .api.record import format_note, get_note, parse_note
+from .bind.qr_service import qr_service
 from .bind.service import bind_service
 from .utils.logger import Logger
 from .utils.ratelimit import rate_limiter
@@ -18,7 +19,9 @@ COMMAND_PREFIXES = ("#", "/", "！", "!")
 
 HELP_TEXT = """=== 星穹铁道助手 ===
 【账号】
-#星铁绑定ck <Cookie> - 私聊绑定米游社 Cookie
+#星铁扫码登录 - 米游社扫码绑定（推荐，私聊）
+#星铁扫码状态 - 查看扫码结果并完成绑定
+#星铁绑定ck <Cookie> - 手动粘贴 Cookie 绑定
 #星铁解绑 - 删除绑定信息
 【查询】
 #星铁体力 - 开拓力 / 委托 / 实训
@@ -113,6 +116,21 @@ def handle(req: Request) -> Result:
 
     if command in ("星铁帮助", "星铁help", "星铁"):
         return Result(True, HELP_TEXT)
+
+    if command in ("星铁扫码登录", "星铁扫码"):
+        if req.is_group:
+            return Result(False, "扫码会暴露你的登录二维码，请在私聊中进行")
+        ok, text, session = qr_service.start(req.user_id)
+        image = session.image_url if session else None
+        return Result(ok, text, image=image)
+
+    if command == "星铁扫码状态":
+        ok, text = qr_service.check(req.user_id)
+        return Result(ok, text)
+
+    if command in ("星铁取消扫码", "星铁扫码取消"):
+        ok, text = qr_service.cancel(req.user_id)
+        return Result(ok, text)
 
     if command in ("星铁绑定ck", "星铁绑定CK", "星铁绑定"):
         if req.is_group:

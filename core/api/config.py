@@ -22,6 +22,31 @@ URL_INDEX = f"{RECORD_API}/game_record/app/hkrpg/api/index"
 # 注：UIGF 文档未收录该接口，但为社区广泛使用的稳定端点
 URL_NOTE = f"{RECORD_API}/game_record/app/hkrpg/api/note"
 
+# ---- 扫码登录（passport-api.miyoushe.com）----
+# 规范：https://uigf.org/zh/mihoyo-api-collection/hoyolab/login/qrcode_hoyolab.html
+# 这两个接口不需要 Cookie，也不需要 DS 签名，只要 x-rpc-app_id + x-rpc-device_id
+PASSPORT_API = "https://passport-api.miyoushe.com"
+URL_QR_CREATE = f"{PASSPORT_API}/account/ma-cn-passport/web/createQRLogin"
+URL_QR_QUERY = f"{PASSPORT_API}/account/ma-cn-passport/web/queryQRLoginStatus"
+QR_APP_ID = "bll8iq97cem8"
+QR_REFERER = "https://user.mihoyo.com/"
+
+# 扫码状态
+QR_STATUS_CREATED = "Created"
+QR_STATUS_SCANNED = "Scanned"
+QR_STATUS_CONFIRMED = "Confirmed"
+QR_RETCODE_EXPIRED = -3501
+QR_RETCODE_CANCELLED = -3505
+
+# 二维码有效期（秒），米游社给的是约 5 分钟，留出余量
+QR_TTL = 240
+# 轮询间隔（秒），太密集会被风控
+QR_POLL_INTERVAL = 3
+
+# 把登录链接渲染成二维码图片的公网服务（roost 只能发远程图片 URL，本地文件发不出去）
+# {data} 会被替换成 urlencode 后的登录链接
+QR_IMAGE_API = "https://api.pwmqr.com/qrcode/create/?url={data}"
+
 # 请求间隔下限（秒），避免触发风控
 REQUEST_INTERVAL = 1.5
 

@@ -47,8 +47,9 @@ class StarrailPlugin(Plugin):
 p = StarrailPlugin(id=PLUGIN_ID, name="星穹铁道助手", version="0.1.0")
 
 p.menu("星穹铁道", [
+    {"text": "#星铁扫码登录", "desc": "米游社扫码绑定（私聊）"},
     {"text": "#星铁体力", "desc": "查询开拓力、委托与每日实训进度"},
-    {"text": "#星铁绑定ck", "desc": "私聊绑定米游社 Cookie（建议用小号）"},
+    {"text": "#星铁绑定ck", "desc": "私聊粘贴米游社 Cookie（建议用小号）"},
 ])
 
 
@@ -79,6 +80,21 @@ def cmd_help_en(m) -> None:
 @p.command("星铁", desc="查看星穹铁道助手指令")
 def cmd_bare(m) -> None:
     _reply(m, _run(m.user, m.group, "星铁帮助"))
+
+
+@p.command("星铁扫码登录", desc="米游社扫码绑定（私聊，二维码有效期约 4 分钟）")
+def cmd_qr_login(m) -> None:
+    _reply(m, _run(m.user, m.group, "星铁扫码登录"))
+
+
+@p.command("星铁扫码状态", desc="查询扫码结果，确认后自动完成绑定")
+def cmd_qr_status(m) -> None:
+    _reply(m, _run(m.user, m.group, "星铁扫码状态"))
+
+
+@p.command("星铁取消扫码", desc="取消本次扫码登录")
+def cmd_qr_cancel(m) -> None:
+    _reply(m, _run(m.user, m.group, "星铁取消扫码"))
 
 
 @p.command("星铁绑定ck <cookie>", desc="私聊绑定米游社 Cookie")
