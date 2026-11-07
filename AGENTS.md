@@ -52,6 +52,21 @@ Set-Location -LiteralPath "D:\Personal data\星铁机器人"
 
 **接口规范来源**：`https://uigf.org/zh/mihoyo-api-collection/`
 
+### 已踩过的坑（真机部署时逐个撞过，别再犯）
+
+1. **`requirements.txt` 必须纯 ASCII**。写中文注释会让 pip 在 GBK 环境下 `UnicodeDecodeError`，
+   表现为「安装 Python 依赖失败」。roost 用系统编码解码依赖文件，不认 UTF-8 中文。
+2. **不要用 SDK 的 `alias=` 注册别名**。别名条目上报的 `pattern` 仍是原始命令名，
+   roost 按 pattern 首词解析命令名，于是判定「命令已被插件自己注册」并加载失败（loaded=false）。
+   别名要写成独立的 `@p.command("别名")`。
+3. **SDK 的 ready 不发 `listen` 字段**。不声明的话 roost 不会把非命令消息转发过来，
+   `#星铁体力` 这类被动写法永远收不到。已在 `main.py` 里用 `StarrailPlugin` 子类覆盖 `_ready()` 补上
+   `"listen": ["message"]`（不改 `roost_sdk.py`）。
+4. **外部插件不能注册 AI 工具**。`subprocess.js` 明确只警告不生效，工具注册只对内核插件开放。
+   所以对接 DeepSeek 不能走 tools，得另想办法（见阶段5）。
+5. **插件放进 plugins 目录后不会自动出现**，要调 `POST /api/plugins/rescan`（需 `Content-Type: application/json`），
+   或重启 roost。面板 `http://127.0.0.1:8080/api/status` 的 `plugins[].loaded/error` 是判断依据。
+
 ## 四、目录
 
 ```
