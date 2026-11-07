@@ -1,19 +1,24 @@
 """
-米游社API客户端
-基础请求封装，DS签名、错误处理
+米游社 API 客户端
+统一请求封装：DS 签名、请求头、频率控制、错误码处理
+请求头规范见 UIGF-org「鉴权」文档
 """
 import time
-import requests
 from typing import Optional
+from urllib.parse import urlparse
 
-from .config import DEFAULT_HEADERS, REQUEST_INTERVAL
-from .ds_sign import generate_ds, generate_device_id
+import requests
+
+from .config import REQUEST_TIMEOUT, REQUEST_INTERVAL
+from .ds_sign import APP_VERSION, CLIENT_TYPE, generate_device_id, generate_ds
 from ..utils.logger import Logger
 
 logger = Logger("MhyApi")
 
 
 class MhyApiError(Exception):
+    """米游社接口异常"""
+
     def __init__(self, retcode: int, message: str):
         self.retcode = retcode
         self.message = message
@@ -21,51 +26,53 @@ class MhyApiError(Exception):
 
 
 class MhyClient:
+    """一个 Cookie 对应一个客户端实例"""
+
     def __init__(self, cookie: str):
         self.cookie = cookie
         self.session = requests.Session()
-        self.last_request_time = 0
+        self.last_request_time = 0.0
         self.device_id = generate_device_id()
 
-    def _get_headers(self, params: Optional[dict] = None, body: Optional[dict] = None) -> dict:
-        headers = DEFAULT_HEADERS.copy()
-        headers["Cookie"] = self.cookie
-        headers["x-rpc-device_id"] = self.device_id
-        # 生成DS签名
-        headers["DS"] = generate_ds(query=params, body=body)
-        return headers
+    def _build_headers(self, url: str, params: Optional[dict], body: Optional[dict]) -> dict:
+        host = urlparse(url).netloc
+        return {
+            "Cookie": self.cookie,
+            "DS": generate_ds(params=params, body=body, client_type=CLIENT_TYPE),
+            "x-rpc-app_version": APP_VERSION,
+            "x-rpc-client_type": CLIENT_TYPE,
+            "x-rpc-device_id": self.device_id,
+            "x-rpc-language": "zh-cn",
+            "X-Requested-With": "com.mihoyo.hyperion",
+            "Origin": f"https://{host}",
+            "Referer": "https://webstatic.mihoyo.com",
+            "Host": host,
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            ),
+        }
 
-    def _need_wait(self) -> float:
-        """计算需要等待的时间，避免请求过快"""
-        now = time.time()
-        elapsed = now - self.last_request_time
+    def _throttle(self) -> None:
+        """请求间隔控制"""
+        elapsed = time.time() - self.last_request_time
         if elapsed < REQUEST_INTERVAL:
-            return REQUEST_INTERVAL - elapsed
-        return 0
+            time.sleep(REQUEST_INTERVAL - elapsed)
 
     def request(self, method: str, url: str, params: Optional[dict] = None,
-                data: Optional[dict] = None, json: Optional[dict] = None) -> dict:
-        """统一请求方法，自动处理频率、签名、错误"""
-        wait = self._need_wait()
-        if wait > 0:
-            time.sleep(wait)
-
-        headers = self._get_headers(params=params, body=json)
+                body: Optional[dict] = None) -> dict:
+        """发起请求，返回 data 字段"""
+        self._throttle()
+        headers = self._build_headers(url, params, body)
+        kwargs = {"headers": headers, "params": params, "timeout": REQUEST_TIMEOUT}
+        if body is not None:
+            kwargs["json"] = body
 
         try:
-            resp = self.session.request(
-                method=method,
-                url=url,
-                headers=headers,
-                params=params,
-                data=data,
-                json=json,
-                timeout=10
-            )
+            resp = self.session.request(method, url, **kwargs)
             self.last_request_time = time.time()
-            resp.raise_for_status()
             result = resp.json()
-        except requests.RequestException as e:
+        except (requests.RequestException, ValueError) as e:
             logger.error("请求失败", e)
             raise MhyApiError(-1, "网络请求失败，请稍后重试")
 
@@ -73,16 +80,27 @@ class MhyClient:
         message = result.get("message", "未知错误")
 
         if retcode != 0:
-            logger.warn(f"API返回错误: [{retcode}] {message}")
-            # 常见错误码处理
-            if retcode in [-100, 10001]:
-                raise MhyApiError(retcode, "Cookie已失效，请重新绑定")
-            raise MhyApiError(retcode, message)
+            logger.warn(f"接口返回错误: url={url} retcode={retcode} message={message}")
+            raise MhyApiError(retcode, self._friendly_message(retcode, message))
 
-        return result.get("data", {})
+        return result.get("data", {}) or {}
+
+    @staticmethod
+    def _friendly_message(retcode: int, message: str) -> str:
+        """常见错误码转成用户能看懂的提示"""
+        mapping = {
+            -100: "Cookie 中的 login_token 无效，请重新获取",
+            10001: "登录态已失效，请重新绑定 Cookie",
+            10101: "账号已注销或不存在",
+            10102: "账号数据未公开，请到米游社-战绩页开启「公开战绩」",
+            10103: "该游戏账号未绑定此米游社账号",
+            1034: "触发米游社风控验证，请稍后重试",
+            -110: "请求过于频繁，请稍后再试",
+        }
+        return mapping.get(retcode, message)
 
     def get(self, url: str, params: Optional[dict] = None) -> dict:
         return self.request("GET", url, params=params)
 
-    def post(self, url: str, data: Optional[dict] = None, json: Optional[dict] = None) -> dict:
-        return self.request("POST", url, data=data, json=json)
+    def post(self, url: str, body: Optional[dict] = None) -> dict:
+        return self.request("POST", url, body=body)

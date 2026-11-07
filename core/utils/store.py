@@ -16,10 +16,14 @@ DB_PATH = Path(__file__).parent.parent.parent / "data" / "starrail.db"
 
 class UserBind:
     def __init__(self, qq_id: str, cookie: Optional[str] = None, uid: Optional[str] = None,
-                 auth_key: Optional[str] = None, bind_time: int = 0, last_query_time: Optional[int] = None):
+                 region: Optional[str] = None, nickname: Optional[str] = None,
+                 auth_key: Optional[str] = None, bind_time: int = 0,
+                 last_query_time: Optional[int] = None):
         self.qq_id = qq_id
         self.cookie = cookie
         self.uid = uid
+        self.region = region
+        self.nickname = nickname
         self.auth_key = auth_key
         self.bind_time = bind_time
         self.last_query_time = last_query_time
@@ -52,6 +56,8 @@ class Store:
                     qq_id TEXT PRIMARY KEY,
                     cookie TEXT,
                     uid TEXT,
+                    region TEXT,
+                    nickname TEXT,
                     auth_key TEXT,
                     bind_time INTEGER NOT NULL,
                     last_query_time INTEGER
@@ -70,6 +76,8 @@ class Store:
                 qq_id=row["qq_id"],
                 cookie=row["cookie"],
                 uid=row["uid"],
+                region=row["region"],
+                nickname=row["nickname"],
                 auth_key=row["auth_key"],
                 bind_time=row["bind_time"],
                 last_query_time=row["last_query_time"]
@@ -78,25 +86,26 @@ class Store:
     def set_user_bind(self, qq_id: str, data: dict):
         import time
         existing = self.get_user_bind(qq_id)
+        allowed = {"cookie", "uid", "region", "nickname", "auth_key", "last_query_time"}
         with self._get_conn() as conn:
             cursor = conn.cursor()
             if existing:
-                update_fields = []
-                params = []
-                for k, v in data.items():
-                    if k in ["cookie", "uid", "auth_key", "last_query_time"]:
-                        update_fields.append(f"{k} = ?")
-                        params.append(v)
-                params.append(qq_id)
-                cursor.execute(f"UPDATE user_bind SET {', '.join(update_fields)} WHERE qq_id = ?", params)
+                fields = [(k, v) for k, v in data.items() if k in allowed]
+                if not fields:
+                    return
+                assignments = ", ".join(f"{k} = ?" for k, _ in fields)
+                params = [v for _, v in fields] + [qq_id]
+                cursor.execute(f"UPDATE user_bind SET {assignments} WHERE qq_id = ?", params)
             else:
                 cursor.execute("""
-                    INSERT INTO user_bind (qq_id, cookie, uid, auth_key, bind_time)
-                    VALUES (?, ?, ?, ?, ?)
+                    INSERT INTO user_bind (qq_id, cookie, uid, region, nickname, auth_key, bind_time)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
                 """, (
                     qq_id,
                     data.get("cookie"),
                     data.get("uid"),
+                    data.get("region"),
+                    data.get("nickname"),
                     data.get("auth_key"),
                     int(time.time())
                 ))

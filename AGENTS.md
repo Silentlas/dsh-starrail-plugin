@@ -77,11 +77,38 @@ assets/               # 静态资源
 ```
 
 ### 命名规范
-- 文件名：camelCase，如 `gachaService.ts`
-- 类名：PascalCase，如 `GachaService`
-- 接口/类型：PascalCase，如 `CharacterData`
+- Python 文件/模块：snake_case，如 `record.py`
+- 类名：PascalCase，如 `MhyClient`
+- 函数/变量：snake_case
 - 常量：UPPER_SNAKE_CASE，如 `REQUEST_INTERVAL`
 - 命令前缀：统一使用 `#星铁` 开头，如 `#星铁绑定ck`、`#星铁体力`
+
+## 三之二、运行与调试
+
+**环境坑（必看）**：PATH 上的 `python` 是另一套运行时（3.13），没装本项目依赖。
+依赖装在 `D:\Program Files\Python312\python.exe`，所有命令必须显式指定这个解释器。
+
+```powershell
+# 安装依赖（仅首次）
+& "D:\Program Files\Python312\python.exe" -m pip install -r requirements.txt
+
+# 启动服务（必须在项目根目录，入口用了相对导入）
+Set-Location -LiteralPath "D:\Personal data\星铁机器人"
+& "D:\Program Files\Python312\python.exe" -m core.main
+
+# 健康检查
+Invoke-RestMethod http://127.0.0.1:8765/health
+```
+
+**联调接口**：`POST http://127.0.0.1:8765/api/command`
+请求体 `{qq_id, group_id?, command, args, is_group}`，返回 `{success, message, image?}`。
+
+**米游社接口验证方法**：用假 Cookie 打真实接口，若返回业务错误码（如 -100 / 10001）说明
+签名与请求头正确；若返回签名相关错误码则说明 DS 算法或 salt 有问题。
+
+**接口规范来源**：`https://uigf.org/zh/mihoyo-api-collection/`（字段以此为准，禁止凭记忆写字段）。
+当前用 `client_type=5` + 4X salt + DS2（该 salt 不随米游社版本漂移，最稳）；
+`client_type=2` 的 K2 salt 随版本变化，容易失效，不要用。
 
 ---
 
@@ -121,8 +148,8 @@ feat(bind): 实现米游社扫码登录流程
 ## 五、开发流程要求
 
 ### 单模块开发顺序
-1. 先写接口类型定义（TypeScript interface）
-2. 再写数据层逻辑（API调用、数据清洗）
+1. 先写数据结构定义（dataclass / 类型）
+2. 再写数据层逻辑（API 调用、字段清洗）
 3. 再写业务逻辑（缓存、频率控制、错误处理）
 4. 最后接入命令入口和渲染
 
@@ -138,9 +165,10 @@ feat(bind): 实现米游社扫码登录流程
 ### 禁止事项
 - 禁止在日志中打印完整Cookie、authkey、用户敏感信息
 - 禁止在群聊场景下接收/回复Cookie相关内容
-- 禁止硬编码接口URL，统一放在api/config.ts
+- 禁止硬编码接口URL，统一放在 `core/api/config.py`
 - 禁止在代码中写死用户ID、测试QQ号
 - 禁止引入未经验证的重型依赖（尤其是原生编译模块）
+- 禁止凭记忆写米游社返回字段，一律以 UIGF 文档为准
 
 ---
 
@@ -169,28 +197,30 @@ feat(bind): 实现米游社扫码登录流程
 
 ## 七、当前开发阶段
 
-### 阶段0：环境搭建（进行中）
-- [ ] 初始化package.json、tsconfig.json
-- [ ] 跑通DSH插件Hello World
-- [ ] 实现基础命令注册和事件监听
+### 阶段0：环境搭建 ✅ 完成
+- [x] Python 工程骨架（FastAPI 服务 + SQLite + 日志 + 频率限制）
+- [x] DS 签名（DS2 / 4X salt）与请求头规范，已用真实接口验证
+- [x] 命令路由层（`#星铁帮助` / `绑定ck` / `解绑` / `体力`）
+- [ ] DSH TypeScript 桥接层（`bridge/`，尚未编写）
 
-### 阶段1：账号绑定体系
-- [ ] Cookie手动绑定
+### 阶段1：账号绑定体系（进行中）
+- [x] Cookie 手动绑定（自动拉取 UID / 区服 / 昵称）
+- [x] Cookie 校验、解绑、群聊拦截
 - [ ] 米游社扫码登录
-- [ ] 账号数据存储
+- [ ] Cookie 有效性定期巡检
 
 ### 阶段2：练度查询
-- [ ] 基础数据接口（体力、账号总览）
-- [ ] 角色详情接口
+- [ ] 首页信息（角色列表、账号总览）
+- [ ] 角色详情（技能、光锥、遗器、面板）
 - [ ] 伤害预期计算
 
 ### 阶段3：抽卡分析
-- [ ] 抽卡链接解析
-- [ ] 全量记录拉取
-- [ ] 统计和保底计算
+- [ ] 抽卡链接解析与 authkey 提取
+- [ ] 全量记录拉取与增量更新
+- [ ] 统计和保底计算、UIGF 导出
 
 ### 阶段4：图片渲染
-- [ ] Puppeteer渲染引擎
+- [ ] Playwright 渲染引擎
 - [ ] 角色练度卡
 - [ ] 账号总览卡
 - [ ] 抽卡分析图
