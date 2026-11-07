@@ -79,14 +79,17 @@ def fetch_qr(device_id: str) -> tuple[str, str]:
 
 
 def query_status(ticket: str, device_id: str) -> tuple[str, dict]:
-    """查询扫码状态，返回 (status, data)"""
+    """
+    查询扫码状态，返回 (status, data)
+    注意：接口返回的字段名是 stat（不是 status），未扫码时值是 "Init"
+    """
     data = _post(URL_GAME_QR_QUERY,
                  {"app_id": GAME_QR_APP_ID, "device": device_id, "ticket": ticket},
                  {"x-rpc-app_id": "bll8iq97cem8"})
     if data.get("retcode") != 0:
         raise GameQrError(data.get("retcode"), data.get("message") or "查询扫码状态失败")
     payload = data.get("data") or {}
-    status = payload.get("status") or GAME_QR_STATUS_WAIT
+    status = payload.get("stat") or payload.get("status") or GAME_QR_STATUS_WAIT
     return status, payload
 
 

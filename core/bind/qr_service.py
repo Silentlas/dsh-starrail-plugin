@@ -121,8 +121,12 @@ class QrService:
         try:
             status, payload = game_qr.query_status(session.ticket, session.device_id)
         except game_qr.GameQrError as e:
-            logger.warn(f"用户 {session.user_id} 查询游戏扫码状态失败: {e.message}")
+            logger.warn(f"用户 {session.user_id} 查询游戏扫码状态失败: [{e.retcode}] {e.message}")
+            if e.retcode in (-105, -106, -3501, -3505):
+                self._sessions.pop(session.user_id, None)
+                return False, f"{e.message}\n二维码已失效，请重新发送 #星铁扫码登录"
             return False, e.message
+        logger.info(f"游戏扫码状态: {status}")
 
         session.status = status
 
