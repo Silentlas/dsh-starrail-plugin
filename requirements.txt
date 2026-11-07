@@ -1,17 +1,2 @@
-# Web框架 - 提供HTTP接口给DSH桥接层调用
-fastapi==0.109.2
-uvicorn==0.27.1
-
-# 米游社API请求
-requests==2.31.0
-aiohttp==3.9.3
-
-# 数据存储
-# SQLite内置，无需额外安装
-
-# 图片渲染
-# 可选：playwright用于HTML渲染，后续再装
-
-# 工具库
-pydantic==2.6.1
-python-dotenv==1.0.0
+# roost 首次加载会自动建 .venv 并安装这里的依赖
+requests>=2.31.0

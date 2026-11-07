@@ -1,41 +1,45 @@
 """
-日志工具，自动脱敏敏感信息
+日志工具
+所有输出一律走 stderr：stdout 是 roost 的协议通道，写入任何非 JSON 内容都会破坏协议
+敏感信息（Cookie / authkey / token）自动脱敏
 """
+import os
 import re
 import sys
 from datetime import datetime
+
+_SENSITIVE_PATTERNS = [
+    (re.compile(r"((?:cookie|authkey|token|stoken|ltoken|ltuid)\s*[=:]\s*)([^;,\s]+)", re.I), r"\1***"),
+]
+
+
+def mask(text: str) -> str:
+    """脱敏敏感字段"""
+    result = str(text)
+    for pattern, replacement in _SENSITIVE_PATTERNS:
+        result = pattern.sub(replacement, result)
+    return result
 
 
 class Logger:
     def __init__(self, prefix: str):
         self.prefix = f"[{prefix}]"
 
-    def _mask_sensitive(self, text: str) -> str:
-        """脱敏Cookie、authkey、token等敏感信息"""
-        patterns = [
-            r'(cookie|authkey|token|stoken)\s*[=:]\s*([^\s;&]+)',
-            r'((?:cookie|authkey|token|stoken)["\']?\s*[:=]\s*["\']?)([^\s"\'&]+)',
-        ]
-        result = text
-        for pattern in patterns:
-            result = re.sub(pattern, r'\1=***', result, flags=re.IGNORECASE)
-        return result
-
-    def info(self, message: str):
+    def _emit(self, level: str, message: str) -> None:
         ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        print(f"{ts} {self.prefix} [INFO] {self._mask_sensitive(message)}")
+        sys.stderr.write(f"{ts} {self.prefix} [{level}] {mask(message)}\n")
+        sys.stderr.flush()
 
-    def warn(self, message: str):
-        ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        print(f"{ts} {self.prefix} [WARN] {self._mask_sensitive(message)}", file=sys.stderr)
+    def info(self, message: str) -> None:
+        self._emit("INFO", message)
 
-    def error(self, message: str, error: Exception = None):
-        ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        err_msg = f" | error: {error}" if error else ""
-        print(f"{ts} {self.prefix} [ERROR] {self._mask_sensitive(message)}{err_msg}", file=sys.stderr)
+    def warn(self, message: str) -> None:
+        self._emit("WARN", message)
 
-    def debug(self, message: str):
-        import os
+    def error(self, message: str, error: Exception = None) -> None:
+        suffix = f" | error: {error}" if error else ""
+        self._emit("ERROR", f"{message}{suffix}")
+
+    def debug(self, message: str) -> None:
         if os.getenv("DEBUG"):
-            ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            print(f"{ts} {self.prefix} [DEBUG] {self._mask_sensitive(message)}")
+            self._emit("DEBUG", message)

@@ -21,48 +21,55 @@
 
 ## 技术栈
 
-- TypeScript + DSH 插件规范
-- Puppeteer 图片渲染
-- SQLite 数据存储
-- DeepSeek 大模型 API
+- **定位**：dsh-roost「外部插件」，独立子进程运行，NDJSON (stdin/stdout) 协议
+- **语言**：Python（官方 `roost_sdk.py`）
+- **存储**：SQLite，数据落在 roost 下发的插件专属 `dataDir`
+- **图片渲染**：Playwright（后续接入）
+- **依赖**：`requirements.txt` 由 roost 首次加载时自动装进插件专属 `.venv`
 
 ## 快速开始
 
-### 环境要求
-- Node.js 18+
-- dsh-roost 运行环境
-- Chrome/Chromium (用于图片渲染)
-
 ### 安装
 ```bash
-# 克隆仓库
 git clone https://github.com/Silentlas/dsh-starrail-plugin.git
-cd dsh-starrail-plugin
-
-# 安装依赖
-npm install
-
-# 编译
-npm run build
 ```
+
+把整个目录拷贝到 roost 插件目录，目录名必须与 `plugin.json` 的 `id` 一致：
+
+```
+<roost>/plugins/dsh-starrail/
+├── plugin.json
+├── main.py
+├── requirements.txt
+├── core/
+└── ...
+```
+
+首次加载 roost 会自动建 `.venv` 并安装依赖，之后热重载生效。
+
+### 本地调试（不连 QQ）
+```bash
+python scripts/smoke_test.py
+```
+模拟 roost 往 stdin 喂 NDJSON，校验 ready、各命令分支与 stdout 协议纯净度。
 
 ## 项目结构
 
 ```
-dsh-starrail-plugin/
-├── src/                # 源代码
-│   ├── index.ts        # 插件入口
-│   ├── api/            # 米游社API封装
-│   ├── bind/           # 账号绑定模块
-│   ├── character/      # 练度查询模块
-│   ├── gacha/          # 抽卡分析模块
-│   ├── render/         # 图片渲染模块
-│   ├── ai/             # DeepSeek AI集成
-│   └── utils/          # 工具函数
-├── templates/          # HTML模板
-├── assets/             # 静态资源
-├── package.json
-└── tsconfig.json
+main.py             # roost 插件入口（协议层，只做转发）
+roost_sdk.py        # 官方 Python SDK（勿改）
+plugin.json         # 插件元信息
+core/
+├── router.py       # 命令路由（与传输无关）
+├── api/            # 米游社接口：DS签名、请求封装、字段清洗
+├── bind/           # 账号绑定
+├── character/      # 练度查询
+├── gacha/          # 抽卡分析
+├── render/         # 图片渲染
+├── ai/             # DeepSeek 集成
+└── utils/          # 日志脱敏、SQLite、频率限制
+scripts/
+└── smoke_test.py   # 协议冒烟测试
 ```
 
 ## 免责声明

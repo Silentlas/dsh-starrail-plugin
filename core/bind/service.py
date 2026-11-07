@@ -7,14 +7,14 @@ from typing import Optional
 from ..api.client import MhyApiError, MhyClient
 from ..api.record import get_game_roles
 from ..utils.logger import Logger
-from ..utils.store import UserBind, store
+from ..utils.store import UserBind, get_store
 
 logger = Logger("BindService")
 
 
 class BindService:
     def __init__(self):
-        self.store = store
+        self.store = get_store()
 
     def bind_cookie(self, qq_id: str, cookie: str) -> tuple[bool, str]:
         """

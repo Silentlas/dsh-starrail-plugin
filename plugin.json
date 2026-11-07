@@ -1,0 +1,12 @@
+{
+  "id": "dsh-starrail",
+  "name": "星穹铁道助手",
+  "version": "0.1.0",
+  "description": "米游社账号绑定、练度查询、抽卡分析与 AI 点评的星穹铁道助手",
+  "shortDesc": "星铁账号查询 + DeepSeek 点评",
+  "runtime": "python",
+  "entry": "main.py",
+  "protocol": 1,
+  "supportPlatforms": ["group", "c2c"],
+  "repo": "Silentlas/dsh-starrail-plugin"
+}
