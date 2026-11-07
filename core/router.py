@@ -22,6 +22,7 @@ HELP_TEXT = """=== 星穹铁道助手 ===
 #星铁扫码登录 - 米游社扫码绑定（推荐，私聊）
 #星铁扫码状态 - 查看扫码结果并完成绑定
 #星铁网页扫码 - 备用：扫米游社网页登录码
+#星铁ck帮助 - Cookie 获取教程（最稳的绑定方式）
 #星铁绑定ck <Cookie> - 手动粘贴 Cookie 绑定
 #星铁解绑 - 删除绑定信息
 【查询】
@@ -30,6 +31,15 @@ HELP_TEXT = """=== 星穹铁道助手 ===
 #星铁抽卡分析 - 抽卡统计（开发中）
 
 Cookie 属于敏感信息，绑定请务必在私聊中进行"""
+COOKIE_HELP_TEXT = """【如何获取 Cookie】
+1. 电脑浏览器打开 https://bbs.miyoushe.com 并登录米游社
+2. 按 F12 打开开发者工具，切到「网络(Network)」标签
+3. 随便点一条 mys.mihoyo.com 或 api-takumi 开头的请求
+4. 在「请求头(Request Headers)」里找到 Cookie 那一行，整行复制
+5. 私聊机器人发送：#星铁绑定ck <刚才复制的内容>
+
+Cookie 必须包含 ltoken_v2 / ltmid_v2 / ltuid_v2 / account_id，最好同时带 cookie_token。
+绑定后有效期约一个月，失效时重新复制一次即可。"""
 
 
 @dataclass
@@ -117,6 +127,9 @@ def handle(req: Request) -> Result:
 
     if command in ("星铁帮助", "星铁help", "星铁"):
         return Result(True, HELP_TEXT)
+
+    if command in ("星铁cookie帮助", "星铁ck帮助", "cookie帮助", "ck帮助"):
+        return Result(True, COOKIE_HELP_TEXT)
 
     if command in ("星铁扫码登录", "星铁扫码", "星铁游戏扫码登录"):
         if req.is_group:

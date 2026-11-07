@@ -125,6 +125,14 @@ class QrService:
             if e.retcode in (-105, -106, -3501, -3505):
                 self._sessions.pop(session.user_id, None)
                 return False, f"{e.message}\n二维码已失效，请重新发送 #星铁扫码登录"
+            if e.retcode == -3503:
+                self._sessions.pop(session.user_id, None)
+                return False, (
+                    "米游社把这次扫码判成了「新设备登录」，被通行证的风控拦下了。\n"
+                    "两个办法：\n"
+                    "1) 去 user.mihoyo.com 关掉「新设备验证」，再发 #星铁扫码登录\n"
+                    "2) 直接用 Cookie 绑定（更稳）：发 #星铁ck帮助 看步骤"
+                )
             return False, e.message
         logger.info(f"游戏扫码状态: {status}")
 
