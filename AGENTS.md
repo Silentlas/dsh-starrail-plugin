@@ -93,6 +93,17 @@ scripts/smoke_test.py # 协议冒烟测试
 - `main` 保持可运行；功能从 `feature/<模块>-<描述>` 出分支
 - commit 格式 `<类型>: <描述>`，类型：feat/fix/refactor/docs/chore/test/style
 
+### 双远端（GitHub 主仓 + Gitee 镜像）
+
+```powershell
+git push origin main    # GitHub  Silentlas/dsh-starrail-plugin
+git push gitee  main    # Gitee   huang-yuhuan040216/dsh-starrail-plugin（国内访问用）
+```
+
+Gitee API 的两个坑（真机撞过）：
+- **更新类接口只认 `application/x-www-form-urlencoded`**，发 JSON 一律 400。改仓库属性必须用表单编码。
+- **创建接口会忽略 `private=false`**，账号默认建私有仓；可见性只能在创建后用 PATCH 表单改成公开。
+
 ## 六、开发与红线
 
 开发顺序：数据结构 → 数据层 → 业务层 → 接入路由。每个功能必须验证：
