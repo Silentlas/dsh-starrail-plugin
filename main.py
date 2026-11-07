@@ -121,9 +121,11 @@ def on_any_message(m):
         return False
 
     result = _run(m.user, m.group, "", content=m.content)
-    if not result.text:
+    if not result.text and not result.image:
         return False
-    m.reply(result.text)
+    # 必须走 _reply：这里直接 m.reply(text) 会把 result.image 丢掉，
+    # 表现为「被动分支不发图、命令分支能发图」这种一半好用的故障
+    _reply(m, result)
     return True
 
 

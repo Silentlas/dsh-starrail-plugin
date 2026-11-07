@@ -59,9 +59,9 @@ class QrService:
         logger.info(f"用户 {user_id} 发起扫码登录")
 
         text = (
-            "请用【米游社 App】扫描二维码并在手机上确认登录\n"
-            f"有效期约 {QR_TTL // 60} 分钟，扫完发送 #星铁扫码状态 完成绑定\n"
-            f"若二维码无法显示，可在浏览器打开：\n{login_url}"
+            "请用【米游社 App】扫码并在手机上确认登录：\n"
+            "「我的」→ 右上角扫码 → 相册 → 选刚保存的二维码图片\n"
+            f"有效期约 {QR_TTL // 60} 分钟，扫完发送 #星铁扫码状态 完成绑定"
         )
         return True, text, session
 

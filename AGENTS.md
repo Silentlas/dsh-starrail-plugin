@@ -76,6 +76,17 @@ Set-Location -LiteralPath "D:\Personal data\星铁机器人"
 8. **插件不能事后主动推送**。`subprocess.js` 收到 `handled` 就 `#finish` 释放 `pending`，
    之后再发 `reply`/`push` 都因 seq 失效被静默丢弃。所以扫码这类异步流程只能做成「拉取式」：
    用户发命令查状态，而不是后台线程回调通知。
+9. **被动监听分支必须走 `_reply`，不要直接 `m.reply(result.text)`**。
+   直发 text 会把 `result.image` 丢掉，表现为「`/星铁扫码登录` 有图、`#星铁扫码登录` 没图」——
+   用户几乎都用 `#`，等于全都没图。任何新增带图命令都要确认两条链路都能出图。
+10. **米游社扫码的登录链接（`user.mihoyo.com/login-platform/mobile.html?...`）是给 App 扫的**，
+    在浏览器里打开只会显示「请使用最新版本游戏或米游社APP扫码」，页面上没有二维码。
+    别把它当兜底链接发给用户，二维码必须自己出图。米游社 App「扫一扫」支持从相册选图，
+    所以「发二维码图 + 提示保存后用相册扫」是可行 UX。
+11. **QQ 侧取图能力已验证可行**：`POST /v2/users/<openid>/files` 传 `{file_type:1, srv_send_msg:false, url}`，
+    `api.pwmqr.com`、`api.qrserver.com`、`quickchart.io` 三个源都返回 200 + `file_info`（ttl 86400）。
+    图发不出去时先怀疑自己没把 image 字段发出去，别急着换图床。
+    诊断脚本 `scripts/probe_qq_media.py`（只上传不发送，需要 `QQ_OPENID` 环境变量）。
 
 ## 四、目录
 
