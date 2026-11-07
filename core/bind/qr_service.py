@@ -56,7 +56,7 @@ class QrService:
         return self._start_web(user_id)
 
     def _start_game(self, user_id: str) -> tuple[bool, str, Optional[QrSession]]:
-        device_id = game_qr.new_device_id()
+        device_id = game_qr.bot_device_id()
         try:
             qr_content, ticket = game_qr.fetch_qr(device_id)
         except game_qr.GameQrError as e:

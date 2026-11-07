@@ -43,6 +43,28 @@ def new_device_id() -> str:
     return str(uuid.uuid4()).upper()
 
 
+def bot_device_id() -> str:
+    """
+    固定的插件设备号。
+    米游社对「新设备」有风控（-3503 设备风险），每次换新 device 等于每次都当新设备，
+    所以这里持久化一个稳定值，验证过一次之后就是可信设备。
+    """
+    from ..utils.store import get_store
+    key = "qr_device_id"
+    try:
+        saved = get_store().get_setting(key)
+        if saved:
+            return saved
+    except Exception:
+        saved = None
+    value = new_device_id()
+    try:
+        get_store().set_setting(key, value)
+    except Exception:
+        pass
+    return value
+
+
 def _post(url: str, body: dict, headers: dict | None = None) -> dict:
     h = {"Content-Type": "application/json", "User-Agent": UA}
     if headers:

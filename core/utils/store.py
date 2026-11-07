@@ -84,6 +84,13 @@ class Store:
             cols = {r["name"] for r in conn.execute("PRAGMA table_info(user_bind)")}
             if "device_id" not in cols:
                 conn.execute("ALTER TABLE user_bind ADD COLUMN device_id TEXT")
+            # 插件级键值配置（如固定的扫码设备号）
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS app_setting (
+                    k TEXT PRIMARY KEY,
+                    v TEXT
+                )
+            """)
         logger.debug(f"数据库就绪: {self.db_path}")
 
     def get_user_bind(self, qq_id: str) -> Optional[UserBind]:
@@ -123,6 +130,20 @@ class Store:
         with self._conn() as conn:
             conn.execute("DELETE FROM user_bind WHERE qq_id = ?", (qq_id,))
         logger.debug(f"删除用户绑定: {qq_id}")
+
+    # ---------- 键值配置 ----------
+    def get_setting(self, key: str) -> Optional[str]:
+        with self._conn() as conn:
+            row = conn.execute("SELECT v FROM app_setting WHERE k = ?", (key,)).fetchone()
+        return row["v"] if row else None
+
+    def set_setting(self, key: str, value: str):
+        with self._conn() as conn:
+            conn.execute(
+                "INSERT INTO app_setting (k, v) VALUES (?, ?) "
+                "ON CONFLICT(k) DO UPDATE SET v = excluded.v",
+                (key, value),
+            )
 
 
 _store: Optional[Store] = None
