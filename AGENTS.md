@@ -24,51 +24,56 @@
 
 | 模块 | 技术选型 | 说明 |
 |------|----------|------|
-| 开发语言 | TypeScript | 严格模式，不使用any |
-| 插件框架 | DSH官方插件规范 | 严格遵循Cordis插件机制 |
-| 数据存储 | 初版：DSH内置持久化；稳定版：SQLite(better-sqlite3) | 数据结构先按可迁移到SQLite设计 |
-| 图片渲染 | Puppeteer + HTML/CSS模板 | 复用Yunzai系星铁插件UI风格 |
-| 米游社请求 | 复用开源API封装 + DS签名 | 不自己实现签名算法 |
-| 大模型调用 | DSH内置DeepSeek接口 | 原生调用，不额外申请密钥 |
-| 频率控制 | 插件内令牌桶算法 | 单用户每分钟2次，全群每分钟10次 |
+| 核心业务逻辑 | Python 3.10+ | 所有功能全部在Python侧实现 |
+| HTTP服务 | FastAPI + Uvicorn | 本地127.0.0.1:8765提供接口 |
+| DSH桥接层 | TypeScript | 极薄透传层，只做消息转发和基础频率限制 |
+| 数据存储 | SQLite（Python内置sqlite3） | 零额外依赖 |
+| 图片渲染 | Playwright + HTML/CSS模板 | 后续接入 |
+| 米游社请求 | requests + DS签名封装 | 复用开源Python实现 |
+| 大模型调用 | DeepSeek Python SDK | 原生调用 |
+| 频率控制 | Python侧实现令牌桶 | 单用户每分钟2次，全群每分钟10次 |
 
 ---
 
 ## 三、目录结构约定
 
 ```
-src/
-├── index.ts          # 插件入口，注册所有命令和事件
-├── api/              # 米游社API封装层
-│   ├── client.ts     # 统一请求封装，DS签名、错误处理
-│   ├── record.ts     # 游戏战绩接口（体力、角色列表）
-│   ├── character.ts  # 角色详情接口
-│   └── gacha.ts      # 抽卡记录接口
-├── bind/             # 账号绑定模块
-│   ├── service.ts    # 绑定逻辑（扫码、Cookie校验、存储）
-│   └── qrcode.ts     # 米游社扫码登录流程
-├── character/       # 练度查询模块
-│   ├── service.ts    # 数据处理、缓存、伤害计算调用
-│   └── damage.ts     # 伤害预期计算封装
-├── gacha/            # 抽卡分析模块
-│   ├── service.ts    # 记录拉取、增量更新、统计计算
-│   └── analyze.ts     # 保底计算、欧非统计、UIGF导出
-├── render/           # 图片渲染模块
-│   ├── engine.ts     # Puppeteer渲染引擎封装
-│   ├── character.ts  # 角色练度卡渲染
-│   ├── overview.ts    # 账号总览卡渲染
-│   └── gacha.ts      # 抽卡分析图渲染
-├── ai/               # DeepSeek AI集成
-│   ├── parser.ts     # 自然语言指令解析
-│   ├── review.ts     # 练度点评、抽卡建议、账号诊断
-│   └── prompt.ts     # Prompt模板管理
-└── utils/            # 通用工具
-    ├── store.ts      # 数据存储封装
-    ├── ratelimit.ts  # 频率限制
-    ├── cache.ts      # 本地缓存
-    └── logger.ts     # 日志（敏感信息脱敏）
-templates/            # HTML模板文件
-assets/               # 静态资源（角色立绘、图标，本地缓存）
+core/                 # Python核心业务逻辑
+├── main.py           # FastAPI入口，提供HTTP接口
+├── api/              # 米游社API封装
+│   ├── client.py     # 请求封装、DS签名
+│   ├── record.py     # 战绩接口
+│   ├── character.py  # 角色详情
+│   └── gacha.py      # 抽卡记录
+├── bind/             # 账号绑定
+│   ├── service.py
+│   └── qrcode.py     # 扫码登录
+├── character/       # 练度查询
+│   ├── service.py
+│   └── damage.py     # 伤害计算
+├── gacha/            # 抽卡分析
+│   ├── service.py
+│   └── analyze.py
+├── render/           # 图片渲染
+│   ├── engine.py
+│   └── templates/
+├── ai/               # DeepSeek集成
+│   ├── parser.py
+│   └── review.py
+└── utils/            # 工具
+    ├── store.py      # SQLite存储
+    ├── ratelimit.py
+    ├── cache.py
+    └── logger.py
+
+bridge/               # DSH TypeScript桥接层（极薄透传）
+├── index.ts
+└── README.md
+
+config/               # 配置文件
+data/                 # 运行时数据（数据库、缓存）
+templates/            # HTML渲染模板
+assets/               # 静态资源
 ```
 
 ### 命名规范
