@@ -124,7 +124,7 @@ def handle(req: Request) -> Result:
         image = session.image_url if session else None
         return Result(ok, text, image=image)
 
-    if command == "星铁扫码状态":
+    if command in ("星铁扫码状态", "星铁登录状态", "星铁扫码查询"):
         ok, text = qr_service.check(req.user_id)
         return Result(ok, text)
 

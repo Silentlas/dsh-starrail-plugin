@@ -55,3 +55,8 @@ CACHE_TTL = 15 * 60
 
 # 首次请求超时（秒）
 REQUEST_TIMEOUT = 10
+
+# ---- 频率限制（每分钟次数，0 表示该维度不限流）----
+# 调试期单用户先放开；公开群上线前再根据实际负载调回来
+RATE_LIMIT_USER_PER_MIN = 0
+RATE_LIMIT_GROUP_PER_MIN = 10
